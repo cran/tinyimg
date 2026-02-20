@@ -1,0 +1,51 @@
+#!/bin/sh
+
+# mimics: source ~/.cargo/env
+export PATH="$HOME/.cargo/bin:$PATH"
+
+# Check for Rust toolchain per CRAN policy
+VERSION=$(rustc --version 2>/dev/null)
+if [ $? -ne 0 ]; then
+  echo "------------------ RUST COMPILER NOT FOUND --------------------"
+  echo ""
+  echo "Cargo and rustc are required. Please install Rust:"
+  echo ""
+  echo " - yum install cargo         (Fedora/CentOS)"
+  echo " - apt-get install cargo rustc (Debian/Ubuntu)"
+  echo " - brew install rust         (macOS)"
+  echo ""
+  echo "Alternatively install Rust from: <https://www.rust-lang.org>"
+  echo ""
+  echo "---------------------------------------------------------------"
+  exit 1
+fi
+
+echo "Using `which cargo`"
+echo "Rustc version: $VERSION"
+
+# Check if we need to create vendor directory
+# This handles the case when installing from GitHub via remotes::install_github()
+if [ ! -d "src/rust/vendor" ] && [ ! -f "src/rust/vendor.tar.xz" ]; then
+  echo "Vendor directory not found. Creating vendor directory..."
+  if [ -f "src/rust/update-vendor.sh" ]; then
+    ./src/rust/update-vendor.sh
+    echo "Vendor directory created successfully"
+  else
+    echo "Warning: update-vendor.sh not found. Cargo will fetch from crates.io"
+  fi
+fi
+
+# Generate cargo config for vendored sources only if vendor/ exists
+if [ -d "src/rust/vendor" ]; then
+  mkdir -p src/rust/.cargo
+  cat > src/rust/.cargo/config.toml << 'EOF'
+[source.crates-io]
+replace-with = "vendored-sources"
+
+[source.vendored-sources]
+directory = "vendor"
+EOF
+  echo "Cargo configuration created for vendored sources"
+else
+  echo "Note: vendor/ directory not found. Cargo will fetch from crates.io"
+fi
