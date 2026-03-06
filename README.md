@@ -6,15 +6,14 @@
 
 <!-- badges: end -->
 
-An R package for optimizing and compressing images using Rust libraries. Currently supports PNG optimization via the [oxipng](https://github.com/oxipng/oxipng) crate.
+An R package for optimizing and compressing images using Rust libraries. Currently supports PNG optimization via [exoquant](https://github.com/exoticorn/exoquant-rs) (lossy palette reduction) and [oxipng](https://github.com/oxipng/oxipng) (lossless optimization).
 
 ## Installation
 
-You can install the development version of tinyimg from GitHub:
+You can install the development version of {tinyimg} from r-universe.dev:
 
 ```r
-# install.packages("remotes")
-remotes::install_github("yihui/tinyimg")
+install.packages("tinyimg", repos = "https://yihui.r-universe.dev")
 ```
 
 ## Usage
@@ -30,16 +29,18 @@ png(tmp, width = 400, height = 400)
 plot(1:10)
 dev.off()
 
-# Optimize with different levels
-optim_png(tmp, paste0(tmp, "-o1.png"), level = 1)
-optim_png(tmp, paste0(tmp, "-o6.png"), level = 6)
+# Optimize with different levels (lossless)
+tinypng(tmp, paste0(tmp, "-o1.png"), level = 1)
+tinypng(tmp, paste0(tmp, "-o6.png"), level = 6)
+# Lossy
+tinypng(tmp, paste0(tmp, "-lossy.png"), lossy = 2.3)
 ```
 
 ### Directory optimization
 
 ```r
 # Optimize all PNGs in a directory
-optim_png("path/to/directory")
+tinypng("path/to/directory")
 ```
 
 ### Optimization levels
@@ -50,7 +51,7 @@ The `level` parameter controls the optimization level (0-6):
 - `2`: Default - good balance between speed and compression
 - `6`: Maximum optimization - best compression but slower
 
-See the [benchmark results](https://pkg.yihui.org/tinyimg/examples/benchmark.html) for detailed comparisons of optimization levels and `?optim_png` for full documentation.
+See the [benchmark results](https://pkg.yihui.org/tinyimg/examples/benchmark.html) for detailed comparisons of optimization levels and `?tinypng` for full documentation.
 
 ## For Package Developers
 
